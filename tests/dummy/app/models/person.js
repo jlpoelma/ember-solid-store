@@ -15,7 +15,7 @@ import SemanticModel, {
 } from 'ember-solid-store/models/semantic-model';
 
 @solid({
-  defaultStorageLocation: '/profile/card.ttl',
+  defaultStorageLocation: '/card',
   private: false,
   type: FOAF('Person'),
   ns: FOAF,

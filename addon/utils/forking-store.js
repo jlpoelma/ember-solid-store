@@ -250,9 +250,9 @@ export default class ForkingStore {
    */
   addAll(inserts) {
     for (const ins of inserts) {
+      console.log("addgraph: ", addGraphFor(ins.graph));
       this.graph.add(statementInGraph(ins, addGraphFor(ins.graph)));
       try {
-        console.log(statementInGraph(ins, delGraphFor(ins.graph)));
         this.graph.remove(statementInGraph(ins, delGraphFor(ins.graph)));
       } catch (e) {
         // this is okay!  the statement may not exist
@@ -304,6 +304,7 @@ export default class ForkingStore {
    */
   changedGraphs() {
     const forGraphs = new Set();
+    console.log("All graphs:", this.allGraphs())
     for (const graph of this.allGraphs()) {
       let url;
       try {
@@ -377,7 +378,6 @@ export default class ForkingStore {
       (statement) => statementInGraph(statement, graph)
     );
 
-    console.log(deletes);
 
     try {
       await this.update(deletes, inserts);
@@ -392,6 +392,8 @@ export default class ForkingStore {
    * @memberof {ForkingStore}
    */
   async persist() {
+    console.log("changed graphs: ")
+    console.log(this.changedGraphs());
     return await Promise.all(
       this.changedGraphs()
         .map((graphString) => namedNode(graphString))

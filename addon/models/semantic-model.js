@@ -85,8 +85,9 @@ async function changeGraphTriples(entity, del, ins, options = {}) {
   }
 
   // store the data through the graph immediately
-  store.addAll(ins);
   store.removeStatements(del);
+  store.addAll(ins);
+  
 }
 
 /**
@@ -246,6 +247,7 @@ function property(options = {}) {
         }
       },
       set(value) {
+        console.log("edit");
         const predicate = calculatePredicate(this);
         const graph = graphForInstance(this, propertyName);
         const setRelationObject = function (object) {
@@ -253,8 +255,8 @@ function property(options = {}) {
           const ins = object
             ? [new Statement(this.uri, predicate, object, graph)]
             : [];
-          // console.log(del);
-          // console.log(ins);
+          console.log("add:", ins);
+          console.log("del:", del);
           changeGraphTriples(this, del, ins)
             .then((uri, message, response) =>
               console.log(`Success updating: ${message}`)

@@ -23,22 +23,16 @@ export default class SolidCardInfoComponent extends Component {
   async fetchVcard() {
     await this.auth.ensureLogin();
     await this.auth.ensureTypeIndex();
-    const graph = this.store.store.graph;
-    const me = graph.sym(this.auth.webId);
-    console.log(me);
-    const fetcher = new Fetcher(graph);
-    console.log(await fetcher.load(me));
-    console.log(graph);
-    console.log(me.doc());
 
-    this.me = this.store.create('solid/person', me, { defaultGraph: me.doc() });
-    console.log(this.me);
+    await this.store.fetchGraphForType('person');
+    await this.store.all('person')
+
+    this.me = await this.store.peekInstance('person', this.auth.webId);
   }
 
   @action
-  saveUser(event) {
+  async saveUser(event) {
     event.preventDefault();
-    console.log('save');
-    this.store.persist();
+    await this.store.persist();
   }
 }
