@@ -7,8 +7,8 @@ module.exports = function (environment) {
     rootURL: '/',
     locationType: 'auto',
     rdfStore: {
-      name: "store",
-      enableDataAdapter: true // Ember Inspector "Data" tab\n
+      name: 'store',
+      enableDataAdapter: true, // Ember Inspector "Data" tab\n
     },
     EmberENV: {
       FEATURES: {
@@ -21,7 +21,7 @@ module.exports = function (environment) {
       },
     },
     RSTORE: {
-      name: "store"
+      name: 'store',
     },
 
     APP: {

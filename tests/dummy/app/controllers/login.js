@@ -4,9 +4,9 @@ import { action } from '@ember/object';
 import Controller from '@ember/controller';
 
 export default class LoginController extends Controller {
-  @service("solid-auth") auth;
+  @service('solid-auth') auth;
 
-  queryParams = ['from']
+  queryParams = ['from'];
 
   @tracked
   from = null;
@@ -14,7 +14,9 @@ export default class LoginController extends Controller {
   @action
   login(provider) {
     const options = { identityProvider: provider };
-    if (this.from) { options.redirectUrl = this.from; }
+    if (this.from) {
+      options.redirectUrl = this.from;
+    }
     this.auth.ensureLogin(options);
   }
 }

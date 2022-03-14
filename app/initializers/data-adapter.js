@@ -1,1 +1,4 @@
-export { default, initialize } from 'ember-solid-store/initializers/data-adapter';
+export {
+  default,
+  initialize,
+} from 'ember-solid-store/initializers/data-adapter';

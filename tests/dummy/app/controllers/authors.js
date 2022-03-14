@@ -1,28 +1,28 @@
 import Controller from '@ember/controller';
 import { inject as service } from '@ember/service';
-import { action } from '@ember/object'
+import { action } from '@ember/object';
 
 export default class AuthorsController extends Controller {
-    @service router;
-    @service store;
+  @service router;
+  @service store;
 
-    @action
-    async createAuthor(){
-        this.store.create("author", {
-            givenName: "Hetty",
-            familyName: "Test"
-        })
+  @action
+  async createAuthor(givenName, familyName) {
+    this.store.create('author', {
+      givenName: givenName,
+      familyName: familyName,
+    });
 
-        await this.store.persist();
-        console.log(this.router);
-        this.router.refresh();
-    }
+    await this.store.persist();
 
-    @action 
-    async deleteAuthor(author){
-        author.destroy();
-        await this.store.persist();
+    this.router.refresh();
+  }
 
-        this.router.refresh();
-    }
+  @action
+  async deleteAuthor(author) {
+    author.destroy();
+    await this.store.persist();
+
+    this.router.refresh();
+  }
 }

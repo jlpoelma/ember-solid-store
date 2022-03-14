@@ -66,8 +66,12 @@ function graphForInstance(entity, propertyName) {
  * @param {Object} options Entity options
  */
 async function changeGraphTriples(entity, del, ins, options = {}) {
-  const validStatement = function(statement) {
-    return statement.subject.value !== null && statement.predicate.value !== null && statement.object.value !== null;
+  const validStatement = function (statement) {
+    return (
+      statement.subject.value !== null &&
+      statement.predicate.value !== null &&
+      statement.object.value !== null
+    );
   };
 
   del = del.filter(validStatement);
@@ -97,56 +101,63 @@ function calculatePropertyValue(target, propertyName) {
   const options = target.attributeDefinitions[propertyName];
   const predicate = calculatePredicateForProperty(target, propertyName);
   const graph = graphForInstance(target, propertyName);
-  const response = options.inverse ? target.store.any(undefined, predicate, target.uri, graph) : target.store.any(target.uri, predicate, undefined, graph);
+  const response = options.inverse
+    ? target.store.any(undefined, predicate, target.uri, graph)
+    : target.store.any(target.uri, predicate, undefined, graph);
 
-  const createRelatedRecordOptions = { defaultGraph: options.propagateDefaultGraph ? target.defaultGraph : undefined };
+  const createRelatedRecordOptions = {
+    defaultGraph: options.propagateDefaultGraph
+      ? target.defaultGraph
+      : undefined,
+  };
 
   switch (options.type) {
-    case "string":
+    case 'string':
       value = response && response.value;
       break;
-    case "integer":
+    case 'integer':
       value = response && parseInt(response.value);
       break;
-    case "boolean":
+    case 'boolean':
       if (response === undefined) {
         value = undefined;
       } else {
         const val = response.value;
-        value = (val == "true" || val == "1");
+        value = val == 'true' || val == '1';
       }
       break;
-    case "term":
+    case 'term':
       value = response;
       break;
-    case "dateTime":
+    case 'dateTime':
       value = response && new Date(response.value);
       break;
-    case "belongsTo":
-      value = response && target.store.create(options.model, response, createRelatedRecordOptions);
+    case 'belongsTo':
+      value =
+        response &&
+        target.store.create(
+          options.model,
+          response,
+          createRelatedRecordOptions
+        );
       break;
-    case "hasMany":
+    case 'hasMany':
       var matches;
       if (options.inverse) {
         let sourceGraph = graphForType(options.model, target.store);
 
-        matches =
-          target
-            .store
-            .match(undefined, predicate, target.uri, sourceGraph)
-            .map(({ subject }) => subject);
+        matches = target.store
+          .match(undefined, predicate, target.uri, sourceGraph)
+          .map(({ subject }) => subject);
       } else {
-        matches =
-          target
-            .store
-            .match(target.uri, predicate, undefined, graph)
-            .map(({ object }) => object);
+        matches = target.store
+          .match(target.uri, predicate, undefined, graph)
+          .map(({ object }) => object);
       }
 
-      value =
-        matches
-          .map((uri) =>
-            target.store.create(options.model, uri, createRelatedRecordOptions));
+      value = matches.map((uri) =>
+        target.store.create(options.model, uri, createRelatedRecordOptions)
+      );
       break;
     case undefined:
       value = response && response.value;
@@ -178,14 +189,15 @@ function updatePropertyValue(entity, propertyName) {
  */
 function calculatePredicateForProperty(entity, propertyName) {
   const options = entity.attributeDefinitions[propertyName];
-  const predicate = (options.predicate && toNamedNode(options.predicate))
-        || (options.ns && toNamespace(options.ns)(propertyName))
-        || (entity.defaultNamespace && toNamespace(entity.defaultNamespace)(propertyName))
-        || (entity.constructor.namespace && entity.constructor.namespace(propertyName));
-  if (!predicate)
-    throw "Could not calculate predicate";
-  else
-    return predicate;
+  const predicate =
+    (options.predicate && toNamedNode(options.predicate)) ||
+    (options.ns && toNamespace(options.ns)(propertyName)) ||
+    (entity.defaultNamespace &&
+      toNamespace(entity.defaultNamespace)(propertyName)) ||
+    (entity.constructor.namespace &&
+      entity.constructor.namespace(propertyName));
+  if (!predicate) throw 'Could not calculate predicate';
+  else return predicate;
 }
 
 /**
@@ -197,16 +209,19 @@ function calculatePredicateForProperty(entity, propertyName) {
 function property(options = {}) {
   const predicateUri = options.predicate;
 
-  return function(self, propertyName, descriptor) {
+  return function (self, propertyName, descriptor) {
     self.attributes = self.attributes ? self.attributes : [];
     self.attributes.push(propertyName);
 
     const cacheKey = cacheKeyForAttr(propertyName);
 
     self.attributeDefinitions = self.attributeDefinitions || {};
-    self.attributeDefinitions[propertyName] = Object.assign({ cacheKey }, options);
+    self.attributeDefinitions[propertyName] = Object.assign(
+      { cacheKey },
+      options
+    );
 
-    const calculatePredicate = function(entity) {
+    const calculatePredicate = function (entity) {
       return calculatePredicateForProperty(entity, propertyName);
     };
 
@@ -233,42 +248,53 @@ function property(options = {}) {
       set(value) {
         const predicate = calculatePredicate(this);
         const graph = graphForInstance(this, propertyName);
-        const setRelationObject = function(object) {
+        const setRelationObject = function (object) {
           const del = this.store.match(this.uri, predicate, undefined, graph);
-          const ins = object ? [new Statement(this.uri, predicate, object, graph)] : [];
+          const ins = object
+            ? [new Statement(this.uri, predicate, object, graph)]
+            : [];
           // console.log(del);
           // console.log(ins);
           changeGraphTriples(this, del, ins)
-            .then((uri, message, response) => console.log(`Success updating: ${message}`))
-            .catch((message, uri, response) => sendAlert(message, { uri, message, response }));
+            .then((uri, message, response) =>
+              console.log(`Success updating: ${message}`)
+            )
+            .catch((message, uri, response) =>
+              sendAlert(message, { uri, message, response })
+            );
         }.bind(this);
 
         let object;
         // TODO: add support for clearing values using undefined or
         // null.
         switch (options.type) {
-          case "string":
+          case 'string':
             setRelationObject(new rdflib.Literal(value));
             break;
-          case "integer":
-            setRelationObject(new rdflib.Literal(value, null, XSD("decimal")));
+          case 'integer':
+            setRelationObject(new rdflib.Literal(value, null, XSD('decimal')));
             break;
-          case "boolean":
-            setRelationObject(new rdflib.literal(value ? "true" : "false", null, XSD("boolean")));
+          case 'boolean':
+            setRelationObject(
+              new rdflib.literal(value ? 'true' : 'false', null, XSD('boolean'))
+            );
             break;
-          case "dateTime":
-            setRelationObject(new rdflib.Literal(value.toUTCString(), null, XSD("dateTime")));
+          case 'dateTime':
+            setRelationObject(
+              new rdflib.Literal(value.toUTCString(), null, XSD('dateTime'))
+            );
             break;
-          case "belongsTo":
+          case 'belongsTo':
             const oldValue = this[propertyName];
             setRelationObject(value && value.uri);
             // invalidate inverse relation
             if (options.inverseProperty) {
-              oldValue && updatePropertyValue(oldValue, options.inverseProperty);
+              oldValue &&
+                updatePropertyValue(oldValue, options.inverseProperty);
               value && updatePropertyValue(value, options.inverseProperty);
             }
             break;
-          case "hasMany":
+          case 'hasMany':
             value = value || []; // ensure the value is an array, even if
             // null was supplied, this helps
             // consumers further down the line
@@ -281,7 +307,9 @@ function property(options = {}) {
             if (!oldObjects) {
               // remove all values if we haven't cached them
               // TODO: this case is not supported for now
-              console.error("Not removing matches in remote store which might exist");
+              console.error(
+                'Not removing matches in remote store which might exist'
+              );
               this.store.removeMatches(this.uri, predicate, undefined, graph);
             }
 
@@ -291,22 +319,31 @@ function property(options = {}) {
             newObjects.forEach((o) => objectsToRemove.delete(o));
 
             objectsToRemove.forEach((obj) => {
-              statementsToRemove.push(new rdflib.Statement(this.uri, predicate, obj.uri, graph));
+              statementsToRemove.push(
+                new rdflib.Statement(this.uri, predicate, obj.uri, graph)
+              );
             });
             objectsToAdd.forEach((obj) => {
-              statementsToAdd.push(new rdflib.Statement(this.uri, predicate, obj.uri, graph));
+              statementsToAdd.push(
+                new rdflib.Statement(this.uri, predicate, obj.uri, graph)
+              );
             });
 
             changeGraphTriples(this, statementsToRemove, statementsToAdd)
-              .then((uri, message, response) => console.log(`Success updating: ${message}`))
-              .catch((message, uri, response) => sendAlert(message, { uri, message, response })); // TODO: revert property update and recover
+              .then((uri, message, response) =>
+                console.log(`Success updating: ${message}`)
+              )
+              .catch((message, uri, response) =>
+                sendAlert(message, { uri, message, response })
+              ); // TODO: revert property update and recover
 
             // invalidate inverse relations
             [...objectsToAdd, ...objectsToRemove].forEach((obj) => {
-              if (options.inverseProperty) updatePropertyValue(obj, options.inverseProperty);
+              if (options.inverseProperty)
+                updatePropertyValue(obj, options.inverseProperty);
             });
             break;
-          case "term":
+          case 'term':
             setRelationObject(object);
             break;
         }
@@ -318,7 +355,7 @@ function property(options = {}) {
           listener(this, { updatedField: propertyName, newValue: value });
 
         return value;
-      }
+      },
     };
   };
 }
@@ -330,7 +367,7 @@ function property(options = {}) {
  * @param {Object} options Options
  */
 function string(options = {}) {
-  options.type = "string";
+  options.type = 'string';
   return property(options);
 }
 
@@ -341,7 +378,7 @@ function string(options = {}) {
  * @param {Object} options Options
  */
 function integer(options = {}) {
-  options.type = "integer";
+  options.type = 'integer';
   return property(options);
 }
 
@@ -352,7 +389,7 @@ function integer(options = {}) {
  * @param {Object} options Options
  */
 function boolean(options = {}) {
-  options.type = "boolean";
+  options.type = 'boolean';
   return property(options);
 }
 
@@ -363,7 +400,7 @@ function boolean(options = {}) {
  * @param {Object} options Options
  */
 function dateTime(options = {}) {
-  options.type = "dateTime";
+  options.type = 'dateTime';
   return property(options);
 }
 
@@ -374,7 +411,7 @@ function dateTime(options = {}) {
  * @param {Object} options Options
  */
 function term(options = {}) {
-  options.type = "term";
+  options.type = 'term';
   return property(options);
 }
 
@@ -385,7 +422,7 @@ function term(options = {}) {
  * @param {Object} options Options
  */
 function hasMany(options = {}) {
-  options.type = "hasMany";
+  options.type = 'hasMany';
   console.assert(options.model, "hasMany requires 'model' to be supplied");
   return property(options);
 }
@@ -397,7 +434,7 @@ function hasMany(options = {}) {
  * @param {Object} options Options
  */
 function belongsTo(options = {}) {
-  options.type = "belongsTo";
+  options.type = 'belongsTo';
   return property(options);
 }
 
@@ -426,14 +463,26 @@ class SemanticModel {
   }
 
   destroy() {
-    this.attributes.forEach((attr) => this[attr] = null);
+    this.attributes.forEach((attr) => (this[attr] = null));
 
     changeGraphTriples(
       this,
-      [new rdflib.Statement(this.uri, RDF("type"), this.rdfType, graphForInstance(this))],
-      [])
-      .then((uri, message, response) => console.log(`Success deleting: ${message}`))
-      .catch((message, uri, response) => sendAlert(message, { uri, message, response }));
+      [
+        new rdflib.Statement(
+          this.uri,
+          RDF('type'),
+          this.rdfType,
+          graphForInstance(this)
+        ),
+      ],
+      []
+    )
+      .then((uri, message, response) =>
+        console.log(`Success deleting: ${message}`)
+      )
+      .catch((message, uri, response) =>
+        sendAlert(message, { uri, message, response })
+      );
   }
 
   // @service(env.rdfStore.name) store;
@@ -442,12 +491,13 @@ class SemanticModel {
     const store = options.store;
     this.store = store;
 
-    if (options.defaultGraph)
-      this.defaultGraph = options.defaultGraph;
+    if (options.defaultGraph) this.defaultGraph = options.defaultGraph;
     else if (this.constructor.defaultGraph)
       this.defaultGraph = this.constructor.defaultGraph;
     else if (this.constructor.solid) {
-      this.defaultGraph = options.store.discoverDefaultGraphByType(this.constructor);
+      this.defaultGraph = options.store.discoverDefaultGraphByType(
+        this.constructor
+      );
     }
 
     if (options.defaultNamespace)
@@ -470,12 +520,17 @@ class SemanticModel {
     ensureResourceExists(this, options);
 
     // import supplied properties
-    const nonPropertyOptions = ["store","defaultGraph","defaultNamespace","modelName","uri"];
-    Object
-      .keys(options)
-      .filter( (k) => !nonPropertyOptions.includes(k) )
-      .forEach( (k) => {
-          set( this, k, options[k] );
+    const nonPropertyOptions = [
+      'store',
+      'defaultGraph',
+      'defaultNamespace',
+      'modelName',
+      'uri',
+    ];
+    Object.keys(options)
+      .filter((k) => !nonPropertyOptions.includes(k))
+      .forEach((k) => {
+        set(this, k, options[k]);
       });
   }
 
@@ -497,47 +552,50 @@ class SemanticModel {
 function ensureResourceExists(entity, options) {
   const rdfType = entity.rdfType;
   // We cannot use graphForInstance here because the entity is not fully defined yet.
-  const targetGraph = options.store.getGraphForType(entity.modelName) || entity.defaultGraph;
+  const targetGraph =
+    options.store.getGraphForType(entity.modelName) || entity.defaultGraph;
 
   if (entity.uri && rdfType) {
-    const matches =
-      options
-        .store
-        .match(entity.uri, undefined, rdfType, targetGraph)
-        .filter(({ predicate }) => predicate.value == RDF("type").value)
-        .length;
+    const matches = options.store
+      .match(entity.uri, undefined, rdfType, targetGraph)
+      .filter(({ predicate }) => predicate.value == RDF('type').value).length;
 
     if (matches == 0)
       changeGraphTriples(
         this,
         [],
-        [new rdflib.Statement(entity.uri, RDF("type"), rdfType, targetGraph)],
-        options)
-        .then((uri, message, response) => console.log(`Success updating: ${message}`))
-        .catch((message, uri, response) => sendAlert(message, { uri, message, response }));
+        [new rdflib.Statement(entity.uri, RDF('type'), rdfType, targetGraph)],
+        options
+      )
+        .then((uri, message, response) =>
+          console.log(`Success updating: ${message}`)
+        )
+        .catch((message, uri, response) =>
+          sendAlert(message, { uri, message, response })
+        );
   }
 }
 
 function rdfType(typeUri) {
-  return function(klass) {
+  return function (klass) {
     klass.rdfType = typeUri;
   };
 }
 
 function defaultGraph(graphUri) {
-  return function(klass) {
+  return function (klass) {
     klass.defaultGraph = graphUri;
   };
 }
 
 function autosave(bool = true) {
-  return function(klass) {
+  return function (klass) {
     klass.autosave = bool;
   };
 }
 
 function solid(options) {
-  return function(klass) {
+  return function (klass) {
     klass.solid = options;
 
     if (options.namespace || options.ns) {
@@ -545,16 +603,26 @@ function solid(options) {
     }
 
     if (!options.type && !klass.namespace) {
-      console.error('Must specify type for SOLID instances (eg: type: "http://example.com/MyThing") or specify namespace (eg: namespace: "http://example.com/" or namespace: "ext:")');
+      console.error(
+        'Must specify type for SOLID instances (eg: type: "http://example.com/MyThing") or specify namespace (eg: namespace: "http://example.com/" or namespace: "ext:")'
+      );
     } else {
-      if( options.type )
-        klass.rdfType = toNamedNode(options.type);
-      else
-        klass.rdfType = klass.namespace(klass.name);
+      if (options.type) klass.rdfType = toNamedNode(options.type);
+      else klass.rdfType = klass.namespace(klass.name);
     }
   };
 }
 
 export default SemanticModel;
-export { property, string, integer, boolean, dateTime, hasMany, belongsTo, term, solid };
+export {
+  property,
+  string,
+  integer,
+  boolean,
+  dateTime,
+  hasMany,
+  belongsTo,
+  term,
+  solid,
+};
 export { rdfType, defaultGraph, autosave };
