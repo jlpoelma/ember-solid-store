@@ -21,6 +21,8 @@ export default class Author extends SemanticModel {
 
   @hasMany({
     model: 'book',
+    inverse: true,
+    predicate: "schema:author"
   })
   books;
 }

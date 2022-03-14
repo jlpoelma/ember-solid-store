@@ -8,6 +8,7 @@ export default class AuthorsRoute extends Route {
   async model() {
     await this.solidAuth.ensureLogin();
     await this.store.fetchGraphForType('author');
+    await this.store.fetchGraphForType('book');
     return this.store.all('author');
   }
 }

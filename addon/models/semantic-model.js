@@ -144,8 +144,8 @@ function calculatePropertyValue(target, propertyName) {
     case 'hasMany':
       var matches;
       if (options.inverse) {
-        let sourceGraph = graphForType(options.model, target.store);
 
+        let sourceGraph = graphForType(options.model, target.store);
         matches = target.store
           .match(undefined, predicate, target.uri, sourceGraph)
           .map(({ subject }) => subject);
@@ -189,6 +189,7 @@ function updatePropertyValue(entity, propertyName) {
  */
 function calculatePredicateForProperty(entity, propertyName) {
   const options = entity.attributeDefinitions[propertyName];
+
   const predicate =
     (options.predicate && toNamedNode(options.predicate)) ||
     (options.ns && toNamespace(options.ns)(propertyName)) ||
