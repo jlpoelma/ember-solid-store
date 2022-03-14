@@ -14,7 +14,7 @@ export default class AuthorsController extends Controller {
         })
 
         await this.store.persist();
-
+        console.log(this.router);
         this.router.refresh();
     }
 
@@ -23,6 +23,6 @@ export default class AuthorsController extends Controller {
         author.destroy();
         await this.store.persist();
 
-        // this.router.refresh();
+        this.router.refresh();
     }
 }
