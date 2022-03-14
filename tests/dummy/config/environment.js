@@ -1,11 +1,15 @@
 'use strict';
 
-module.exports = function(environment) {
+module.exports = function (environment) {
   let ENV = {
     modulePrefix: 'dummy',
     environment,
     rootURL: '/',
     locationType: 'auto',
+    rdfStore: {
+      name: "store",
+      enableDataAdapter: true // Ember Inspector "Data" tab\n
+    },
     EmberENV: {
       FEATURES: {
         // Here you can enable experimental features on an ember canary build
