@@ -17,11 +17,10 @@ import SemanticModel, {
 @solid({
   defaultStorageLocation: '/profile/card.ttl',
   private: false,
+  type: FOAF('Person'),
+  ns: FOAF,
 })
-@rdfType(FOAF('Person'))
 export default class SolidPersonModel extends SemanticModel {
-  defaultNamespace = VCARD;
-
   @string({ ns: FOAF })
   name = '';
 
@@ -33,9 +32,6 @@ export default class SolidPersonModel extends SemanticModel {
 
   @term({ ns: LDP })
   inbox = null;
-
-  // @term( { ns: SP } )
-  // preferencesFile = null;
 
   @term({ ns: SP })
   storage = null;

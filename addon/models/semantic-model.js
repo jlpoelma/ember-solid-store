@@ -144,7 +144,6 @@ function calculatePropertyValue(target, propertyName) {
     case 'hasMany':
       var matches;
       if (options.inverse) {
-
         let sourceGraph = graphForType(options.model, target.store);
         matches = target.store
           .match(undefined, predicate, target.uri, sourceGraph)

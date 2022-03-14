@@ -10,4 +10,5 @@ Router.map(function () {
   this.route('login');
   this.route('authors');
   this.route('books');
+  this.route('my-profile');
 });

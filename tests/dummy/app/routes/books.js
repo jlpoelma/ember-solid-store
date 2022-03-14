@@ -10,8 +10,8 @@ export default class BooksRoute extends Route {
     await this.store.fetchGraphForType('book');
     await this.store.fetchGraphForType('author');
     return {
-        books: this.store.all('book'),
-        authors: this.store.all('author')
-    }
+      books: this.store.all('book'),
+      authors: this.store.all('author'),
+    };
   }
 }

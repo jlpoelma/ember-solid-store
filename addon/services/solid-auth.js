@@ -179,7 +179,7 @@ export default class AuthService extends Service {
 
   get publicTypeIndexLocation() {
     return (
-      this.story.any(
+      this.store.any(
         this.webIdSym,
         SOLID('publicTypeIndex'),
         undefined,

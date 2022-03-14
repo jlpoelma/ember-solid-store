@@ -9,7 +9,7 @@ const { Fetcher, namedNode } = rdflib;
 
 export default class SolidCardInfoComponent extends Component {
   @service('solid-auth') auth;
-  @service('rdf-store') store;
+  @service store;
 
   constructor() {
     super(...arguments);

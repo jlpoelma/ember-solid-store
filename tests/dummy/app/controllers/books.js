@@ -8,14 +8,16 @@ export default class BooksController extends Controller {
 
   @action
   async createBook(headLine, numberOfPages, authorURI) {
-    console.log(authorURI)
-    let author = authorURI ? await this.store.peekInstance("author", authorURI.slice(1, -1)) : undefined;
+    console.log(authorURI);
+    let author = authorURI
+      ? await this.store.peekInstance('author', authorURI.slice(1, -1))
+      : undefined;
     console.log(author);
 
     this.store.create('book', {
       headLine: headLine,
       numberOfPages: numberOfPages,
-      author: author
+      author: author,
     });
 
     await this.store.persist();
