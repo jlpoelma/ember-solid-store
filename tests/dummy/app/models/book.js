@@ -7,20 +7,20 @@ import SemanticModel, {
 } from 'ember-solid-store/models/semantic-model';
 
 @solid({
-  defaultStorageLocation: '/private/tests/my-authors.ttl', // default location in solid pod
+  defaultStorageLocation: '/private/tests/my-books.ttl', // default location in solid pod
   private: true, // is this private info for the user?
-  type: 'http://schema.org/Person', // optional, defining NS is good enough if this is derived from the namespace.
+  type: 'http://schema.org/Book', // optional, defining NS is good enough if this is derived from the namespace.
   ns: 'http://schema.org/', // define a namespace for properties.  http://schema.org/ is a good starting point for finding definitions.  No clue? use 'ext'.
 })
-export default class Author extends SemanticModel {
+export default class Book extends SemanticModel {
   @string()
-  givenName;
+  headLine;
 
-  @string()
-  familyName;
+  @integer()
+  numberOfPages;
 
-  @hasMany({
-    model: 'book',
+  @belongsTo({
+    model: 'author',
   })
-  books;
+  author;
 }
